@@ -1,7 +1,7 @@
 import random
 import numpy as np
-import math
 import sys
+import functions
 
 GAUSSIAN_SIGMA = 5
 SELECTION_SIZE = 10
@@ -66,73 +66,6 @@ def uncertainty_on_value(value):
     return random.gauss(value, GAUSSIAN_UNCERTAINTY_ON_VALUES_SIGMA)
 
 
-def sum_function(point, add_uncertainty):
-    result = np.sum(point)
-    if add_uncertainty:
-        return uncertainty_on_value(result)
-    else:
-        return result
-
-
-def square_two_dim_function(point, add_uncertainty):
-    result = -pow(point[0], 2) - pow(point[1], 2) + point[0] + point[1] + 10
-    if add_uncertainty:
-        return uncertainty_on_value(result)
-    else:
-        return result
-
-
-def random_high_dimensional_function(point, add_uncertainty):
-    result = -pow(point[0], 5) + 1 / 100 * pow(point[1], 5) + pow(point[2], 4) + pow(point[3], 4) - 10 * pow(point[5],
-                                                                                                             2) * \
-             point[6] * point[7] * point[8] * math.sin(point[9])
-    if add_uncertainty:
-        return uncertainty_on_value(result)
-    else:
-        return result
-
-
-# https://www.researchgate.net/publication/27382766_On_benchmarking_functions_for_genetic_algorithm
-# next functions are from this paper
-
-
-def f1(point, add_uncertainty):
-    result = pow(point[0], 2) + pow(point[1], 2)
-    if add_uncertainty:
-        return uncertainty_on_value(result)
-    else:
-        return result
-
-
-def f2(point, add_uncertainty):
-    result = (100 * pow(pow(point[0], 2) - point[1], 2)) + pow(1 - point[0], 2)
-    if add_uncertainty:
-        return uncertainty_on_value(result)
-    else:
-        return result
-
-
-def f4(point, add_uncertainty):
-    result = 0
-    for i in range(len(point)):
-        result += i * pow(point[i], 4) + random.gauss(0, 1)
-    if add_uncertainty:
-        return uncertainty_on_value(result)
-    else:
-        return result
-
-
-def f6(point, add_uncertainty):
-    result = 41898.29101
-    for i in range(len(point)):
-        result += -point[i] * math.sin(math.sqrt(math.fabs(point[i])))
-    if add_uncertainty:
-        return uncertainty_on_value(result)
-    else:
-        return result
-
-
-
 def run_functions(uncertainty_on_values, uncertainty_on_arguments):
     if uncertainty_on_values:
         print("Wyniki z niepewnością na wartościach funkcji")
@@ -141,32 +74,32 @@ def run_functions(uncertainty_on_values, uncertainty_on_arguments):
     if not uncertainty_on_values and not uncertainty_on_arguments:
         print("Wyniki bez niepewności")
     sample = create_sample(100, 10, -10, 10)
-    print(evolutionary_algorithm(sample, 100, sum_function, uncertainty_on_values, uncertainty_on_arguments))
+    print(evolutionary_algorithm(sample, 100, functions.sum_function, uncertainty_on_values, uncertainty_on_arguments))
 
     sample = create_sample(100, 2, -10, 10)
-    print(evolutionary_algorithm(sample, 100, square_two_dim_function, uncertainty_on_values, uncertainty_on_arguments))
+    print(evolutionary_algorithm(sample, 100, functions.square_two_dim_function, uncertainty_on_values, uncertainty_on_arguments))
 
     sample = create_sample(100, 10, -1, 1)
-    print(evolutionary_algorithm(sample, 100, random_high_dimensional_function, uncertainty_on_values,
+    print(evolutionary_algorithm(sample, 100, functions.random_high_dimensional_function, uncertainty_on_values,
                                  uncertainty_on_arguments))
     sample = create_sample(100, 2, -5.12, 5.12)
-    print(evolutionary_algorithm(sample, 100, f1, uncertainty_on_values,
+    print(evolutionary_algorithm(sample, 100, functions.f1, uncertainty_on_values,
                                  uncertainty_on_arguments))
     sample = create_sample(100, 2, -2.048, 2.048)
-    print(evolutionary_algorithm(sample, 100, f2, uncertainty_on_values,
+    print(evolutionary_algorithm(sample, 100, functions.f2, uncertainty_on_values,
                                  uncertainty_on_arguments))
     sample = create_sample(100, 30, -1.28, 1.28)
-    print(evolutionary_algorithm(sample, 100, f4, uncertainty_on_values,
+    print(evolutionary_algorithm(sample, 100, functions.f4, uncertainty_on_values,
                                  uncertainty_on_arguments))
     sample = create_sample(100, 10, -500, 500)
-    print(evolutionary_algorithm(sample, 100, f6, uncertainty_on_values,
+    print(evolutionary_algorithm(sample, 100, functions.f6, uncertainty_on_values,
                                  uncertainty_on_arguments))
 
 
 if __name__ == '__main__':
     random.seed(10)
-    Values_Array = [0.1, 1, 2, 5, 10, 25, 100, 200]
-    Arguments_Array = [0.1, 1, 2, 5, 10, 25, 100, 200]
+    Values_Array = [0.1, 1, 10, 200]
+    Arguments_Array = [0.1, 1, 10, 200]
 
     for value in Values_Array:
         GAUSSIAN_UNCERTAINTY_ON_VALUES_SIGMA = value
