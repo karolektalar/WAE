@@ -4,6 +4,7 @@ import math
 import sys
 import main
 
+
 def sum_function(point, add_uncertainty, value_uncertainty_value):
     result = np.sum(point)
     if add_uncertainty:
