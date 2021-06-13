@@ -4,7 +4,6 @@ import sys
 import functions
 from typing import Callable
 
-
 GAUSSIAN_SIGMA = 5
 SELECTION_SIZE = 10
 POINTS_MIN = -100
@@ -16,7 +15,8 @@ def evolutionary_algorithm(sample, number_of_epochs, evaluation_function, uncert
     best_result = sys.float_info.max
     while number_of_epochs > 0:
         sample = tournament_selection_and_mutation(sample, evaluation_function, SELECTION_SIZE, uncertainty_on_values,
-                                                   uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value)
+                                                   uncertainty_on_arguments, value_uncertainty_value,
+                                                   argument_uncertainty_value)
         number_of_epochs -= 1
         for i in range(len(sample)):
             value = evaluation_function(sample[i], False, 0)
@@ -25,33 +25,50 @@ def evolutionary_algorithm(sample, number_of_epochs, evaluation_function, uncert
     return best_result
 
 
-def differential_evolution_algorithm(population: np.ndarray, epochs: int, fitness_function: Callable, recombination_prob: float) -> float:
+def differential_evolution_algorithm(population: np.ndarray, epochs: int, fitness_function: Callable,
+                                     recombination_prob: float,
+                                     uncertainty_on_values: bool, uncertainty_on_arguments: bool, value_uncertainty_value: bool,
+                                     argument_uncertainty_value: bool
+                                     ) -> float:
     best_result = sys.float_info.max
     # TODO Calculate fitness function
-    fitness_values = calculate_fitness_values(fitness_function, population)
+    fitness_values = calculate_fitness_values(fitness_function, population, uncertainty_on_values, uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value)
     while epochs > 0:
         mutant_vectors = create_mutant_vectors(population)
         trial_vectors = create_trial_vectors(population, mutant_vectors, recombination_prob)
-        fitness_value_for_trial_vector = calculate_fitness_values(fitness_function,trial_vectors)
+        fitness_value_for_trial_vector = calculate_fitness_values(fitness_function, trial_vectors, uncertainty_on_values, uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value)
         selected_winning_vectors = select_winning_vectors(trial_vectors, population, fitness_values,
                                                           fitness_value_for_trial_vector)
-        population=selected_winning_vectors
+        population = selected_winning_vectors
         epochs -= 1
+
+        for member in population:
+            val = fitness_function(member, False, 0)
+            if val < best_result:
+                best_result = val
+
     return best_result
 
 
-def calculate_fitness_values(fitness_function: Callable, population:np.ndarray) -> np.ndarray:
+def calculate_fitness_values(fitness_function: Callable, population: np.ndarray,
+                             uncertainty_on_values: bool, uncertainty_on_arguments: bool, value_uncertainty_value: bool,
+                             argument_uncertainty_value: bool
+                             ) -> np.ndarray:
     values = np.zeros(shape=(population.shape[0], 1))
     for i in range(0, population.shape[0]):
-        values[i] = fitness_function(population[i], False, False)
+        if uncertainty_on_arguments:
+            values[i] = fitness_function(gaussian_uncertainty(population[i], argument_uncertainty_value), uncertainty_on_values, value_uncertainty_value)
+        else:
+            values[i] = fitness_function(population[i], uncertainty_on_values, value_uncertainty_value)
     return values
 
 
-def select_winning_vectors(trial_vectors: np.ndarray, population:np.ndarray, population_fitness_values,
+def select_winning_vectors(trial_vectors: np.ndarray, population: np.ndarray, population_fitness_values,
                            trial_fitness_values) -> np.ndarray:
     new_population = np.zeros(shape=population.shape)
     for i in range(0, population.shape[0]):
-        new_population[i] = trial_vectors[i] if trial_fitness_values[i] < population_fitness_values[i] else population[i]
+        new_population[i] = trial_vectors[i] if trial_fitness_values[i] < population_fitness_values[i] else population[
+            i]
     return new_population
 
 
@@ -61,7 +78,7 @@ def create_trial_vectors(population: np.ndarray, mutant_vectors: [], CR: float) 
     for i in range(0, len(mutant_vectors)):
         member = population[i]
         mutant = mutant_vectors[i]
-        if random.uniform(0,1) < CR or i == j_rand:
+        if random.uniform(0, 1) < CR or i == j_rand:
             trial_vectors[i] = mutant
         else:
             trial_vectors[i] = member
@@ -73,10 +90,10 @@ def create_mutant_vectors(population: np.ndarray) -> []:
 
     for member in population:
         # Scaling factor
-        f = random.uniform(0,2)
-        r1 = population[random.randint(0, population.shape[0]-1)]
-        r2 = population[random.randint(0, population.shape[0]-1)]
-        r3 = population[random.randint(0, population.shape[0]-1)]
+        f = random.uniform(0, 2)
+        r1 = population[random.randint(0, population.shape[0] - 1)]
+        r2 = population[random.randint(0, population.shape[0] - 1)]
+        r3 = population[random.randint(0, population.shape[0] - 1)]
         mutant_vector = r1 + f * (r2 - r3)
         mutant_vectors.append(mutant_vector)
     return mutant_vectors
@@ -136,41 +153,62 @@ def run_functions(uncertainty_on_values, uncertainty_on_arguments, value_uncerta
     sample = create_sample(100, 10, -10, 10)
     print(evolutionary_algorithm(sample, 100, functions.sum_function, uncertainty_on_values, uncertainty_on_arguments,
                                  value_uncertainty_value, argument_uncertainty_value))
+    print(differential_evolution_algorithm(sample,100,functions.sum_function, .85,uncertainty_on_values, uncertainty_on_arguments,
+                                           value_uncertainty_value, argument_uncertainty_value))
 
     sample = create_sample(100, 2, -10, 10)
     print(evolutionary_algorithm(sample, 100, functions.square_two_dim_function, uncertainty_on_values,
                                  uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
+    print(differential_evolution_algorithm(sample,100,functions.square_two_dim_function, .85,uncertainty_on_values, uncertainty_on_arguments,
+                                           value_uncertainty_value, argument_uncertainty_value))
 
     sample = create_sample(100, 10, -1, 1)
     print(evolutionary_algorithm(sample, 100, functions.random_high_dimensional_function, uncertainty_on_values,
                                  uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
+    print(differential_evolution_algorithm(sample, 100, functions.random_high_dimensional_function, .85, uncertainty_on_values,
+                                           uncertainty_on_arguments,
+                                           value_uncertainty_value, argument_uncertainty_value))
+
     sample = create_sample(100, 2, -5.12, 5.12)
     print(evolutionary_algorithm(sample, 100, functions.f1, uncertainty_on_values,
                                  uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
+    print(differential_evolution_algorithm(sample, 100, functions.f1, .85, uncertainty_on_values,
+                                           uncertainty_on_arguments,
+                                           value_uncertainty_value, argument_uncertainty_value))
+
     sample = create_sample(100, 2, -2.048, 2.048)
     print(evolutionary_algorithm(sample, 100, functions.f2, uncertainty_on_values,
                                  uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
+    print(differential_evolution_algorithm(sample, 100, functions.f2, .85, uncertainty_on_values,
+                                           uncertainty_on_arguments,
+                                           value_uncertainty_value, argument_uncertainty_value))
+
     sample = create_sample(100, 30, -1.28, 1.28)
     print(evolutionary_algorithm(sample, 100, functions.f4, uncertainty_on_values,
                                  uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
+    print(differential_evolution_algorithm(sample, 100, functions.f4, .85, uncertainty_on_values,
+                                           uncertainty_on_arguments,
+                                           value_uncertainty_value, argument_uncertainty_value))
+
     sample = create_sample(100, 10, -500, 500)
     print(evolutionary_algorithm(sample, 100, functions.f6, uncertainty_on_values,
                                  uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
+    print(differential_evolution_algorithm(sample, 100, functions.f6, .85, uncertainty_on_values,
+                                           uncertainty_on_arguments,
+                                           value_uncertainty_value, argument_uncertainty_value))
 
 
 if __name__ == '__main__':
     random.seed(10)
-    # Values_Array = [0.1, 1, 10, 200]
-    # Arguments_Array = [0.1, 1, 10, 200]
-    #
-    # for value in Values_Array:
-    #     value_uncertainty_value = value
-    #     for argument in Arguments_Array:
-    #         argument_uncertainty_value = argument
-    #         print("Sigma niepewności na argumentach : " + str(argument) + " niepewności na wartościach: " + str(value))
-    #         run_functions(False, False, value_uncertainty_value, argument_uncertainty_value)
-    #         run_functions(True, False, value_uncertainty_value, argument_uncertainty_value)
-    #         run_functions(False, True, value_uncertainty_value, argument_uncertainty_value)
-    #         run_functions(True, True, value_uncertainty_value, argument_uncertainty_value)
-    sample = create_sample(100, 2, -10, 10)
-    differential_evolution_algorithm(sample, 100, functions.sum_function,.4)
+    Values_Array = [0.1, 1, 10, 200]
+    Arguments_Array = [0.1, 1, 10, 200]
+
+    for value in Values_Array:
+        value_uncertainty_value = value
+        for argument in Arguments_Array:
+            argument_uncertainty_value = argument
+            print("Sigma niepewności na argumentach : " + str(argument) + " niepewności na wartościach: " + str(value))
+            run_functions(False, False, value_uncertainty_value, argument_uncertainty_value)
+            run_functions(True, False, value_uncertainty_value, argument_uncertainty_value)
+            run_functions(False, True, value_uncertainty_value, argument_uncertainty_value)
+            run_functions(True, True, value_uncertainty_value, argument_uncertainty_value)
