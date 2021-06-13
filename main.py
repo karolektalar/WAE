@@ -196,6 +196,24 @@ def run_functions(uncertainty_on_values, uncertainty_on_arguments, value_uncerta
     print(differential_evolution_algorithm(sample, 100, functions.f6, .85, uncertainty_on_values,
                                            uncertainty_on_arguments,
                                            value_uncertainty_value, argument_uncertainty_value))
+    sample = create_sample(100, 10, -500, 500)
+    print(evolutionary_algorithm(sample, 100, functions.f7, uncertainty_on_values,
+                                 uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
+    print(differential_evolution_algorithm(sample, 100, functions.f7, .85, uncertainty_on_values,
+                                           uncertainty_on_arguments,
+                                           value_uncertainty_value, argument_uncertainty_value))
+    sample = create_sample(100, 10, -500, 500)
+    print(evolutionary_algorithm(sample, 100, functions.f8, uncertainty_on_values,
+                                 uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
+    print(differential_evolution_algorithm(sample, 100, functions.f8, .85, uncertainty_on_values,
+                                           uncertainty_on_arguments,
+                                           value_uncertainty_value, argument_uncertainty_value))
+    sample = create_sample(100, 10, -500, 500)
+    print(evolutionary_algorithm(sample, 100, functions.f9, uncertainty_on_values,
+                                 uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
+    print(differential_evolution_algorithm(sample, 100, functions.f9, .85, uncertainty_on_values,
+                                           uncertainty_on_arguments,
+                                           value_uncertainty_value, argument_uncertainty_value))
 
 
 if __name__ == '__main__':

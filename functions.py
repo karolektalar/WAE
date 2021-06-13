@@ -69,3 +69,33 @@ def f6(point, add_uncertainty, value_uncertainty_value):
         return main.uncertainty_on_value(result, value_uncertainty_value)
     else:
         return result
+
+
+# funcitons from paper https://link.springer.com/chapter/10.1007/978-3-319-07173-2_32
+
+def f7(point, add_uncertainty, value_uncertainty_value):
+    result = np.sum(np.abs(point)) + np.prod(np.abs(point))
+    if add_uncertainty:
+        return main.uncertainty_on_value(result, value_uncertainty_value)
+    else:
+        return result
+
+
+def f8(point, add_uncertainty, value_uncertainty_value):
+    result = 0
+    for i in range(len(point)):
+        result += (point[i] + .5) ** 2
+    if add_uncertainty:
+        return main.uncertainty_on_value(result, value_uncertainty_value)
+    else:
+        return result
+
+
+def f9(point, add_uncertainty, value_uncertainty_value):
+    result = 0
+    for i in range(len(point)):
+        result += -point[i] * np.sin(np.sqrt(np.abs(point[i])))
+    if add_uncertainty:
+        return main.uncertainty_on_value(result, value_uncertainty_value)
+    else:
+        return result
