@@ -3,6 +3,7 @@ import numpy as np
 import sys
 import functions
 from typing import Callable
+import csv
 
 GAUSSIAN_SIGMA = 5
 SELECTION_SIZE = 10
@@ -31,7 +32,6 @@ def differential_evolution_algorithm(population: np.ndarray, epochs: int, fitnes
                                      argument_uncertainty_value: bool
                                      ) -> float:
     best_result = sys.float_info.max
-    # TODO Calculate fitness function
     fitness_values = calculate_fitness_values(fitness_function, population, uncertainty_on_values, uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value)
     while epochs > 0:
         mutant_vectors = create_mutant_vectors(population)
@@ -143,90 +143,73 @@ def uncertainty_on_value(value, value_uncertainty_value):
     return random.gauss(value, value_uncertainty_value)
 
 
-def run_functions(uncertainty_on_values, uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value):
+def run_functions(csv_writer,uncertainty_on_values, uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value):
     if uncertainty_on_values:
         print("Wyniki z niepewnością na wartościach funkcji")
     if uncertainty_on_arguments:
         print("Wyniki z niepewnością na argumentach funkcji")
     if not uncertainty_on_values and not uncertainty_on_arguments:
         print("Wyniki bez niepewności")
-    sample = create_sample(100, 10, -10, 10)
-    print(evolutionary_algorithm(sample, 100, functions.sum_function, uncertainty_on_values, uncertainty_on_arguments,
-                                 value_uncertainty_value, argument_uncertainty_value))
-    print(differential_evolution_algorithm(sample,100,functions.sum_function, .85,uncertainty_on_values, uncertainty_on_arguments,
-                                           value_uncertainty_value, argument_uncertainty_value))
 
-    sample = create_sample(100, 2, -10, 10)
-    print(evolutionary_algorithm(sample, 100, functions.square_two_dim_function, uncertainty_on_values,
-                                 uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
-    print(differential_evolution_algorithm(sample,100,functions.square_two_dim_function, .85,uncertainty_on_values, uncertainty_on_arguments,
-                                           value_uncertainty_value, argument_uncertainty_value))
+    samples = [create_sample(100, 10, -10, 10), create_sample(100, 2, -10, 10), create_sample(100, 10, -1, 1), create_sample(100, 2, -5.12, 5.12), create_sample(100, 2, -2.048, 2.048),
+    create_sample(100, 30, -1.28, 1.28), create_sample(100, 10, -500, 500), create_sample(100, 10, -500, 500), create_sample(100, 10, -500, 500), create_sample(100, 10, -500, 500)]
+    eval_functions = [functions.sum_function, functions.square_two_dim_function, functions.random_high_dimensional_function, functions.f1, functions.f2,
+    functions.f4, functions.f6, functions.f7, functions.f8, functions.f9]
+    eval_functions_str = ['sum', 'square_two', 'random_high_dim', 'f1', 'f2','f4', 'f6', 'f7', 'f8', 'f9']
 
-    sample = create_sample(100, 10, -1, 1)
-    print(evolutionary_algorithm(sample, 100, functions.random_high_dimensional_function, uncertainty_on_values,
-                                 uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
-    print(differential_evolution_algorithm(sample, 100, functions.random_high_dimensional_function, .85, uncertainty_on_values,
-                                           uncertainty_on_arguments,
-                                           value_uncertainty_value, argument_uncertainty_value))
+    for i in range(len(samples)):
+        res = evolutionary_algorithm(samples[i], 100, eval_functions[i], uncertainty_on_values, uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value)
+        data_row = ['EA', samples[i].shape, '100', eval_functions_str[i]]
+        if uncertainty_on_values:
+            data_row.append(value_uncertainty_value)
+        else:
+            data_row.append(-1)
 
-    sample = create_sample(100, 2, -5.12, 5.12)
-    print(evolutionary_algorithm(sample, 100, functions.f1, uncertainty_on_values,
-                                 uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
-    print(differential_evolution_algorithm(sample, 100, functions.f1, .85, uncertainty_on_values,
-                                           uncertainty_on_arguments,
-                                           value_uncertainty_value, argument_uncertainty_value))
+        if uncertainty_on_arguments:
+            data_row.append(argument_uncertainty_value)
+        else:
+            data_row.append(-1)
+        data_row.append(res)
+        print(data_row)
+        writer.writerow(data_row)
 
-    sample = create_sample(100, 2, -2.048, 2.048)
-    print(evolutionary_algorithm(sample, 100, functions.f2, uncertainty_on_values,
-                                 uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
-    print(differential_evolution_algorithm(sample, 100, functions.f2, .85, uncertainty_on_values,
+        data_row = []
+        res = differential_evolution_algorithm(samples[i], 100, eval_functions[i], .85, uncertainty_on_values,
                                            uncertainty_on_arguments,
-                                           value_uncertainty_value, argument_uncertainty_value))
+                                           value_uncertainty_value, argument_uncertainty_value)
 
-    sample = create_sample(100, 30, -1.28, 1.28)
-    print(evolutionary_algorithm(sample, 100, functions.f4, uncertainty_on_values,
-                                 uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
-    print(differential_evolution_algorithm(sample, 100, functions.f4, .85, uncertainty_on_values,
-                                           uncertainty_on_arguments,
-                                           value_uncertainty_value, argument_uncertainty_value))
+        data_row = ['DE', samples[i].shape, '100', eval_functions_str[i]]
+        if uncertainty_on_values:
+            data_row.append(value_uncertainty_value)
+        else:
+            data_row.append(-1)
 
-    sample = create_sample(100, 10, -500, 500)
-    print(evolutionary_algorithm(sample, 100, functions.f6, uncertainty_on_values,
-                                 uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
-    print(differential_evolution_algorithm(sample, 100, functions.f6, .85, uncertainty_on_values,
-                                           uncertainty_on_arguments,
-                                           value_uncertainty_value, argument_uncertainty_value))
-    sample = create_sample(100, 10, -500, 500)
-    print(evolutionary_algorithm(sample, 100, functions.f7, uncertainty_on_values,
-                                 uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
-    print(differential_evolution_algorithm(sample, 100, functions.f7, .85, uncertainty_on_values,
-                                           uncertainty_on_arguments,
-                                           value_uncertainty_value, argument_uncertainty_value))
-    sample = create_sample(100, 10, -500, 500)
-    print(evolutionary_algorithm(sample, 100, functions.f8, uncertainty_on_values,
-                                 uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
-    print(differential_evolution_algorithm(sample, 100, functions.f8, .85, uncertainty_on_values,
-                                           uncertainty_on_arguments,
-                                           value_uncertainty_value, argument_uncertainty_value))
-    sample = create_sample(100, 10, -500, 500)
-    print(evolutionary_algorithm(sample, 100, functions.f9, uncertainty_on_values,
-                                 uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value))
-    print(differential_evolution_algorithm(sample, 100, functions.f9, .85, uncertainty_on_values,
-                                           uncertainty_on_arguments,
-                                           value_uncertainty_value, argument_uncertainty_value))
+        if uncertainty_on_arguments:
+            data_row.append(argument_uncertainty_value)
+        else:
+            data_row.append(-1)
+        data_row.append(res)
+        writer.writerow(data_row)
+        print(data_row)
 
 
 if __name__ == '__main__':
     random.seed(10)
     Values_Array = [0.1, 1, 10, 200]
     Arguments_Array = [0.1, 1, 10, 200]
+    output_file = open('./results','w')
+    writer = csv.writer(output_file)
+    headers = ['algorithm', 'sample shape', 'epochs', 'evaluation function', 'uncertainty on value', 'uncertainty on argument','result']
+    writer.writerow(headers)
 
     for value in Values_Array:
         value_uncertainty_value = value
         for argument in Arguments_Array:
             argument_uncertainty_value = argument
             print("Sigma niepewności na argumentach : " + str(argument) + " niepewności na wartościach: " + str(value))
-            run_functions(False, False, value_uncertainty_value, argument_uncertainty_value)
-            run_functions(True, False, value_uncertainty_value, argument_uncertainty_value)
-            run_functions(False, True, value_uncertainty_value, argument_uncertainty_value)
-            run_functions(True, True, value_uncertainty_value, argument_uncertainty_value)
+            run_functions(writer,False, False, value_uncertainty_value, argument_uncertainty_value)
+            run_functions(writer,True, False, value_uncertainty_value, argument_uncertainty_value)
+            run_functions(writer,False, True, value_uncertainty_value, argument_uncertainty_value)
+            run_functions(writer,True, True, value_uncertainty_value, argument_uncertainty_value)
+    
+    output_file.close()
