@@ -195,8 +195,7 @@ def run_functions(writer,uncertainty_on_values, uncertainty_on_arguments, value_
 
 if __name__ == '__main__':
     random.seed(10)
-    Values_Array = [0.1, 1, 10, 200]
-    Arguments_Array = [0.1, 1, 10, 200]
+    Values_Array = [0, 0.1, 1, 10, 200]
     output_file = open('./results','w')
     writer = csv.writer(output_file)
     headers = ['algorithm', 'sample shape', 'epochs', 'evaluation function', 'uncertainty on value', 'uncertainty on argument','result']
@@ -204,12 +203,9 @@ if __name__ == '__main__':
 
     for value in Values_Array:
         value_uncertainty_value = value
-        for argument in Arguments_Array:
+        for argument in Values_Array:
             argument_uncertainty_value = argument
             print("Sigma niepewności na argumentach : " + str(argument) + " niepewności na wartościach: " + str(value))
-            run_functions(writer,False, False, value_uncertainty_value, argument_uncertainty_value)
-            run_functions(writer,True, False, value_uncertainty_value, argument_uncertainty_value)
-            run_functions(writer,False, True, value_uncertainty_value, argument_uncertainty_value)
-            run_functions(writer,True, True, value_uncertainty_value, argument_uncertainty_value)
+            run_functions(writer, True, True, value_uncertainty_value, argument_uncertainty_value)
     
     output_file.close()
