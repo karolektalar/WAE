@@ -143,7 +143,7 @@ def uncertainty_on_value(value, value_uncertainty_value):
     return random.gauss(value, value_uncertainty_value)
 
 
-def run_functions(csv_writer,uncertainty_on_values, uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value):
+def run_functions(writer,uncertainty_on_values, uncertainty_on_arguments, value_uncertainty_value, argument_uncertainty_value):
     if uncertainty_on_values:
         print("Wyniki z niepewnością na wartościach funkcji")
     if uncertainty_on_arguments:
